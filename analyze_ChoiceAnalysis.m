@@ -169,27 +169,44 @@ statistics.HolmAdjustedP=holm(statistics.ExactTwoSidedP);
 % n=3 时双侧 p 最小为 2/8=0.25；无需 +1 校正（这是完整枚举）。
 % 对四项检验作 Holm 家族错误率校正；仅作探索证据。
 % 不显著不表示等价；不把试次当作独立被试；不推断自发选择先后顺序。
-% 柱形为被试等权均值；淡色点/细线为各被试配对值，无图例。
-f=figure('Color','w','Position',[80 80 1100 760]);
+% 参考简洁论文图：四个面板横排，窄柱、空心个体点和细配对线。
+% 柱高为被试等权均值；不画SEM、不标注均值，不显示图例。
+f=figure('Color','w','Units','pixels','Position',[60 100 1460 460], ...
+    'MenuBar','none','ToolBar','none','Name','ChoiceAnalysis','NumberTitle','off');
 barColor=[116 175 219]/255;
-pointColor=0.65*[1 1 1]+0.35*barColor;
-lineColor=0.45*[1 1 1]+0.55*barColor;
-offsets=[-0.08 0.02 0.10];
+barEdge=[79 132 172]/255;
+pointEdge=[91 127 153]/255;
+lineColor=[192 211 225]/255;
+xPositions=[1 1.8]; offsets=[-0.035 0 0.035];
 for panel=1:4
-    ax=subplot(2,2,panel);hold(ax,'on');
-    bar(ax,[1 2],means(panel,:),0.58,'FaceColor',barColor,'EdgeColor','none');
-    for s=1:3
-        plot(ax,[1 2]+offsets(s),reshape(P(s,panel,:),1,2),'-o', ...
-            'Color',lineColor,'LineWidth',0.85,'MarkerSize',7, ...
-            'MarkerFaceColor',pointColor,'MarkerEdgeColor',lineColor);
+    % 显式位置避免窗口比例变化导致长标签旋转或面板被挤压。
+    ax=axes('Parent',f,'Units','normalized', ...
+        'Position',[0.065+(panel-1)*0.235 0.20 0.185 0.65]);
+    hold(ax,'on');
+    % 辅助线位于最底层，轻量显示；不盖住柱和个体数据。
+    for gy=0.25:0.25:1
+        plot(ax,[0.60 2.20],[gy gy],'-','Color',[0.93 0.94 0.95],'LineWidth',0.65);
     end
-    set(ax,'XLim',[0.55 2.45],'YLim',[0 1],'XTick',[1 2],'YTick',0:0.2:1, ...
-        'XTickLabel',{'First Cue Instructed','First Cue Free'}, ...
-        'FontName','Arial','FontSize',11,'Box','off','TickDir','out', ...
-        'LineWidth',0.8,'XColor',[0.25 0.25 0.25],'YColor',[0.25 0.25 0.25]);
-    ylabel(ax,'Conditional probability');
+    bar(ax,xPositions,means(panel,:),0.48,'FaceColor',barColor, ...
+        'EdgeColor',barEdge,'LineWidth',0.7);
+    % 同一被试在两条件使用相同小幅水平偏移，仅为避免点重叠。
+    % 先画所有配对线，再画个体点，确保线不会覆盖空心点。
+    for s=1:3
+        plot(ax,xPositions+offsets(s),reshape(P(s,panel,:),1,2),'-', ...
+            'Color',lineColor,'LineWidth',0.75);
+    end
+    for s=1:3
+        plot(ax,xPositions+offsets(s),reshape(P(s,panel,:),1,2),'o', ...
+            'LineStyle','none','MarkerSize',6.5,'LineWidth',1.0, ...
+            'MarkerFaceColor','none','MarkerEdgeColor',pointEdge,'Clipping','off');
+    end
+    set(ax,'XLim',[0.60 2.20],'YLim',[0 1],'XTick',xPositions,'YTick',0:0.25:1, ...
+        'XTickLabel',{'Instructed','Free'},'FontName','Arial','FontSize',11, ...
+        'Box','off','TickDir','out','TickLength',[0.015 0.015], ...
+        'LineWidth',0.8,'XColor',[0.20 0.20 0.20],'YColor',[0.20 0.20 0.20]);
+    if isprop(ax,'XTickLabelRotation'),ax.XTickLabelRotation=0;end
+    if panel==1,ylabel(ax,'Conditional probability','FontSize',12);end
     title(ax,labels{panel},'FontWeight','normal','FontSize',14,'Interpreter','none');
-    % 禁止坐标区工具栏进入导出图（兼容无 Toolbar 属性的 MATLAB）。
     if isprop(ax,'Toolbar'),ax.Toolbar.Visible='off';end
 end
 set(f,'PaperPositionMode','auto');
