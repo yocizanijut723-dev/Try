@@ -212,9 +212,8 @@ for panel=1:4
         'XTickLabel',{'First instructed','First free'},'FontName','Arial','FontSize',11, ...
         'Box','off','TickDir','out','TickLength',[0.015 0.015], ...
         'LineWidth',0.8,'XColor',[0.20 0.20 0.20],'YColor',[0.20 0.20 0.20]);
-    % 横轴放在柱形前景，保持连续；只去掉x轴刻度短线，保留文字。
-    set(ax,'Layer','top');
-    if isprop(ax,'XAxis'),ax.XAxis.TickLength=[0 0];end
+    % 坐标轴放在柱形前景，保持连续；去掉刻度短线，保留文字。
+    set(ax,'Layer','top','TickLength',[0 0]);
     if isprop(ax,'XTickLabelRotation'),ax.XTickLabelRotation=0;end
     if panel==1,ylabel(ax,'Conditional probability','FontSize',12);end
     title(ax,labels{panel},'FontWeight','normal','FontSize',14,'Interpreter','none');
