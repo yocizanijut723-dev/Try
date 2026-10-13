@@ -169,14 +169,14 @@ statistics.HolmAdjustedP=holm(statistics.ExactTwoSidedP);
 % n=3 时双侧 p 最小为 2/8=0.25；无需 +1 校正（这是完整枚举）。
 % 对四项检验作 Holm 家族错误率校正；仅作探索证据。
 % 不显著不表示等价；不把试次当作独立被试；不推断自发选择先后顺序。
-% 参考简洁论文图：四个面板横排，窄柱、空心个体点和细配对线。
+% 参考简洁论文图：四个面板横排，双色窄柱、实心小菱形和细配对线。
 % 柱高为被试等权均值；不画SEM、不标注均值，不显示图例。
 f=figure('Color','w','Units','pixels','Position',[60 100 1460 460], ...
     'MenuBar','none','ToolBar','none','Name','ChoiceAnalysis','NumberTitle','off');
-barColor=[116 175 219]/255;
-barEdge=[79 132 172]/255;
-pointEdge=[91 127 153]/255;
-lineColor=[192 211 225]/255;
+barColors=[116 175 219; 239 157 110]/255; % Instructed蓝色 / Free橙色
+barEdges=[79 132 172; 197 113 72]/255;
+pointColor=[192 173 214]/255; % 与柱色不同的淡紫色实心菱形
+lineColor=[217 204 231]/255;
 xPositions=[1 1.8]; offsets=[-0.035 0 0.035];
 for panel=1:4
     % 显式位置避免窗口比例变化导致长标签旋转或面板被挤压。
@@ -187,21 +187,24 @@ for panel=1:4
     for gy=0.25:0.25:1
         plot(ax,[0.60 2.20],[gy gy],'-','Color',[0.93 0.94 0.95],'LineWidth',0.65);
     end
-    bar(ax,xPositions,means(panel,:),0.48,'FaceColor',barColor, ...
-        'EdgeColor',barEdge,'LineWidth',0.7);
+    % 两种条件分别画柱，保持柱宽相同并明确指定各自颜色。
+    for mode=1:2
+        bar(ax,xPositions(mode),means(panel,mode),0.384, ...
+            'FaceColor',barColors(mode,:),'EdgeColor',barEdges(mode,:),'LineWidth',0.7);
+    end
     % 同一被试在两条件使用相同小幅水平偏移，仅为避免点重叠。
-    % 先画所有配对线，再画个体点，确保线不会覆盖空心点。
+    % 先画所有配对线，再画个体点，确保菱形点位于连线上方。
     for s=1:3
         plot(ax,xPositions+offsets(s),reshape(P(s,panel,:),1,2),'-', ...
             'Color',lineColor,'LineWidth',0.75);
     end
     for s=1:3
-        plot(ax,xPositions+offsets(s),reshape(P(s,panel,:),1,2),'o', ...
-            'LineStyle','none','MarkerSize',6.5,'LineWidth',1.0, ...
-            'MarkerFaceColor','none','MarkerEdgeColor',pointEdge,'Clipping','off');
+        plot(ax,xPositions+offsets(s),reshape(P(s,panel,:),1,2),'d', ...
+            'LineStyle','none','MarkerSize',5.5,'LineWidth',0.6, ...
+            'MarkerFaceColor',pointColor,'MarkerEdgeColor',pointColor,'Clipping','off');
     end
     set(ax,'XLim',[0.60 2.20],'YLim',[0 1],'XTick',xPositions,'YTick',0:0.25:1, ...
-        'XTickLabel',{'Instructed','Free'},'FontName','Arial','FontSize',11, ...
+        'XTickLabel',{'First instructed','First free'},'FontName','Arial','FontSize',11, ...
         'Box','off','TickDir','out','TickLength',[0.015 0.015], ...
         'LineWidth',0.8,'XColor',[0.20 0.20 0.20],'YColor',[0.20 0.20 0.20]);
     if isprop(ax,'XTickLabelRotation'),ax.XTickLabelRotation=0;end
