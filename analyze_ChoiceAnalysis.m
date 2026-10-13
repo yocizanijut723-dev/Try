@@ -169,22 +169,30 @@ statistics.HolmAdjustedP=holm(statistics.ExactTwoSidedP);
 % n=3 时双侧 p 最小为 2/8=0.25；无需 +1 校正（这是完整枚举）。
 % 对四项检验作 Holm 家族错误率校正；仅作探索证据。
 % 不显著不表示等价；不把试次当作独立被试；不推断自发选择先后顺序。
-f=figure('Color','w','Position',[80 80 1100 760]);colors=[0.20 0.45 0.68;0.80 0.40 0.22;0.38 0.60 0.38];
+% 柱形为被试等权均值；淡色点/细线为各被试配对值，无图例。
+f=figure('Color','w','Position',[80 80 1100 760]);
+barColor=[116 175 219]/255;
+pointColor=0.65*[1 1 1]+0.35*barColor;
+lineColor=0.45*[1 1 1]+0.55*barColor;
+offsets=[-0.08 0.02 0.10];
 for panel=1:4
-    ax=subplot(2,2,panel);hold(ax,'on');h=[];
-    % SEM 小幅横向错开，个体点仍位于真实两条件位置。
-    errorbar(ax,[1.06 2.06],means(panel,:),sems(panel,:),'LineStyle','none','Color',[0.25 0.25 0.25],'LineWidth',1);
+    ax=subplot(2,2,panel);hold(ax,'on');
+    bar(ax,[1 2],means(panel,:),0.58,'FaceColor',barColor,'EdgeColor','none');
+    errorbar(ax,[1 2],means(panel,:),sems(panel,:),'LineStyle','none', ...
+        'Color',[0.30 0.36 0.40],'LineWidth',1.1,'CapSize',7);
     for s=1:3
-        hh=plot(ax,[1 2],reshape(P(s,panel,:),1,2),'-o','Color',colors(s,:), ...
-            'LineWidth',0.9,'MarkerSize',6,'MarkerFaceColor','w'); h=[h hh]; %#ok<AGROW>
+        plot(ax,[1 2]+offsets(s),reshape(P(s,panel,:),1,2),'-o', ...
+            'Color',lineColor,'LineWidth',0.85,'MarkerSize',7, ...
+            'MarkerFaceColor',pointColor,'MarkerEdgeColor',lineColor);
     end
-    hh=plot(ax,[1 2],means(panel,:),'-d','Color',[0.05 0.05 0.05],'LineWidth',2.3,'MarkerSize',8, ...
-        'MarkerFaceColor',[0.05 0.05 0.05]);h=[h hh]; %#ok<AGROW>
-    set(ax,'XLim',[0.7 2.3],'YLim',[0 1],'XTick',[1 2],'YTick',0:0.2:1, ...
-        'XTickLabel',{'First Cue Instructed','First Cue Free'},'FontName','Arial','FontSize',10,'Box','off','TickDir','out');
-    ylabel(ax,'Conditional probability');title(ax,sprintf('%s  %s | Fixed: %s',panels{panel},labels{panel},fixed{panel}), ...
-        'FontWeight','normal','Interpreter','none');
-    if panel==1,legend(h,{'Subject 3','Subject 4','Subject 5','Subject mean'},'Location','best','Box','off');end
+    set(ax,'XLim',[0.55 2.45],'YLim',[0 1],'XTick',[1 2],'YTick',0:0.2:1, ...
+        'XTickLabel',{'First Cue Instructed','First Cue Free'}, ...
+        'FontName','Arial','FontSize',11,'Box','off','TickDir','out', ...
+        'LineWidth',0.8,'XColor',[0.25 0.25 0.25],'YColor',[0.25 0.25 0.25]);
+    ylabel(ax,'Conditional probability');
+    title(ax,labels{panel},'FontWeight','normal','FontSize',14,'Interpreter','none');
+    % 禁止坐标区工具栏进入导出图（兼容无 Toolbar 属性的 MATLAB）。
+    if isprop(ax,'Toolbar'),ax.Toolbar.Visible='off';end
 end
 set(f,'PaperPositionMode','auto');
 print(f,fullfile(outputDir,'Figure_ChoiceAnalysis.png'),'-dpng','-r300');
