@@ -169,15 +169,14 @@ statistics.HolmAdjustedP=holm(statistics.ExactTwoSidedP);
 % n=3 时双侧 p 最小为 2/8=0.25；无需 +1 校正（这是完整枚举）。
 % 对四项检验作 Holm 家族错误率校正；仅作探索证据。
 % 不显著不表示等价；不把试次当作独立被试；不推断自发选择先后顺序。
-% 参考简洁论文图：四个面板横排，双色窄柱、实心小菱形和细配对线。
+% 参考简洁论文图：四个面板横排，双色窄柱、黑色实心小菱形和黑色配对线。
 % 柱高为被试等权均值；不画SEM、不标注均值，不显示图例。
 f=figure('Color','w','Units','pixels','Position',[60 100 1460 460], ...
     'MenuBar','none','ToolBar','none','Name','ChoiceAnalysis','NumberTitle','off');
 barColors=[116 175 219; 239 157 110]/255; % Instructed蓝色 / Free橙色
-barEdges=[79 132 172; 197 113 72]/255;
-pointColor=[192 173 214]/255; % 与柱色不同的淡紫色实心菱形
-lineColor=[217 204 231]/255;
-xPositions=[1 1.8]; offsets=[-0.035 0 0.035];
+pointColor=[0 0 0]; % 个体点为黑色实心小菱形
+lineColor=[0 0 0]; % 黑色细配对线
+xPositions=[1 1.8];
 for panel=1:4
     % 显式位置避免窗口比例变化导致长标签旋转或面板被挤压。
     ax=axes('Parent',f,'Units','normalized', ...
@@ -190,16 +189,22 @@ for panel=1:4
     % 两种条件分别画柱，保持柱宽相同并明确指定各自颜色。
     for mode=1:2
         bar(ax,xPositions(mode),means(panel,mode),0.384, ...
-            'FaceColor',barColors(mode,:),'EdgeColor',barEdges(mode,:),'LineWidth',0.7);
+            'FaceColor',barColors(mode,:),'EdgeColor','none');
+        % 仅绘制左、顶部、右三条黑色边；底部由横轴表示。
+        xx=xPositions(mode); yy=means(panel,mode); halfWidth=0.384/2;
+        if isfinite(yy)
+            plot(ax,[xx-halfWidth xx-halfWidth xx+halfWidth xx+halfWidth], ...
+                [0 yy yy 0],'-','Color',[0 0 0],'LineWidth',0.9);
+        end
     end
-    % 同一被试在两条件使用相同小幅水平偏移，仅为避免点重叠。
+    % 个体点严格位于柱中心，不作水平抖动；重合点保持真实位置。
     % 先画所有配对线，再画个体点，确保菱形点位于连线上方。
     for s=1:3
-        plot(ax,xPositions+offsets(s),reshape(P(s,panel,:),1,2),'-', ...
+        plot(ax,xPositions,reshape(P(s,panel,:),1,2),'-', ...
             'Color',lineColor,'LineWidth',0.75);
     end
     for s=1:3
-        plot(ax,xPositions+offsets(s),reshape(P(s,panel,:),1,2),'d', ...
+        plot(ax,xPositions,reshape(P(s,panel,:),1,2),'d', ...
             'LineStyle','none','MarkerSize',5.5,'LineWidth',0.6, ...
             'MarkerFaceColor',pointColor,'MarkerEdgeColor',pointColor,'Clipping','off');
     end
